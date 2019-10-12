@@ -72,6 +72,7 @@ def main():
 		opened_file.write("Working Dir : {0}\n".format(os.getcwd()))
 	rospy.init_node('sagar_turtlesim')
 	pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=1)
+	# pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=1) # to move actual turtlebot use this node to publish move msg
 	sub = rospy.Subscriber('/turtle1/pose', Pose, log_pos)
 	move_msg = Twist()
 	create_s(pub, sub, move_msg)
