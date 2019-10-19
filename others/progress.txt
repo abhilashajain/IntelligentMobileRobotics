@@ -1,1 +1,16 @@
 NOTE : Just create a python file and complete the assignment, while submitting use the VishwakarmaS.py to follow the assignment guidlines
+
+Assignment 3
+
+Step 1
+roslaunch turtlebot_bringup minimal.launch ### for starting the TurtleBot base functionality.
+
+Step 2
+roslaunch turtlebot_rviz_launchers view_navigation.launch
+
+Step 3
+roslaunch turtlebot_navigation amcl_demo.launch map_file:=/home/svishwa2/catkin_ws/src/VishwakarmaS/maps/lng210.yaml
+
+
+To clear the cost map, so that the robot can move ahead removing the obstacles.
+rosservice call /move_base/clear_costmaps

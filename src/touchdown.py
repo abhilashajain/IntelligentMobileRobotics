@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Script to move to Map location with voice commands - Assignment 3 Part 2
+Script to move to Map location - Assignment 3 Part 1
 """
 import rospy
 import actionlib
