@@ -14,3 +14,6 @@ roslaunch turtlebot_navigation amcl_demo.launch map_file:=/home/svishwa2/catkin_
 
 To clear the cost map, so that the robot can move ahead removing the obstacles.
 rosservice call /move_base/clear_costmaps
+
+https://github.com/cmusphinx/ros-pocketsphinx for installing packages
+sudo apt-get install gstreamer1.0-pocketsphinx  # as the package is updated to 1.0
