@@ -17,3 +17,5 @@ rosservice call /move_base/clear_costmaps
 
 https://github.com/cmusphinx/ros-pocketsphinx for installing packages
 sudo apt-get install gstreamer1.0-pocketsphinx  # as the package is updated to 1.0
+
+https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
