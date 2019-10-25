@@ -76,7 +76,7 @@ def get_goal_cordinates(goal, cordinates):
 def touchdown(move_base, cordinates):
 
 	goal = get_goal()
-	if goal == "q":
+	if goal == "0":
 		# print "Bye Bye"
 		rospy.loginfo("Bye Bye")
 	elif goal != "0" and goal in ACTION_DICT:
