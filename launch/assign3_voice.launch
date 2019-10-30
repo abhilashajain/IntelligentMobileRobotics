@@ -1,3 +1,4 @@
 <launch>
+  <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
   <node name="obeyer" pkg="VishwakarmaS" type="obeyer.py" output="screen"/>
 </launch>

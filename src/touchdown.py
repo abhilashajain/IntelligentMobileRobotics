@@ -15,7 +15,6 @@ from geometry_msgs.msg import Point
 
 
 ACTION_DICT = {"1":"Go to Corner One","2":"Go to Corner Two","3":"Go to Corner Three","4":"Go to Corner Four","5":"Go Outside Door","0":"Quit"}
-MOTION_DICT = {"1":"Forward","2":"Stop","3":"Left","4":"Right","5":"Back"}
 
 
 def get_goal():
@@ -76,7 +75,7 @@ def get_goal_cordinates(goal, cordinates):
 def touchdown(move_base, cordinates):
 
 	goal = get_goal()
-	if goal == "0":
+	if goal == "q":
 		# print "Bye Bye"
 		rospy.loginfo("Bye Bye")
 	elif goal != "0" and goal in ACTION_DICT:
