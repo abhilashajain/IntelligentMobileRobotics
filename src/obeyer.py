@@ -3,9 +3,11 @@
 Script to move to Map location with voice commands - Assignment 3 Part 2
 """
 import rospy
+import sys
 import getpass
 import actionlib
 import pandas as pd
+from difflib import SequenceMatcher
 from std_msgs.msg import String
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import *
@@ -14,44 +16,13 @@ from geometry_msgs.msg import Point
 from sound_play.libsoundplay import SoundClient
 import time
 
+sys.path.insert(1, "/home/{0}/catkin_ws/src/VishwakarmaS/src/".format(getpass.getuser()))
+import touchdown as td
 
 
-VOCAB_DICT = {"MOTION_CMD": ["Stop","Back","Forward","Backward","Left","Right","Rotate"],\
+VOCAB_DICT = {"MOTION_CMD": ["Stop","Back","Forward","Backward","Left","Right","Rotate", "Yes", "No"],\
 				"GOAL_CMD": ["Corner One","Corner Two","Corner Three","Corner Four","Outside Door","Quit"]}
 
-#
-# class Obeyer:
-# 	def __init__(self, cordinates):
-#
-#
-# 		# self.move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-# 		# rospy.on_shutdown(self.cleanup)
-# 		# self.voice = rospy.get_param("~voice", "voice_don_diphone")
-# 		self.wavepath = "/home/{0}/catkin_ws/src/VishwakarmaS/res/".format(getpass.getuser())
-# 		# Create the sound client object
-# 		self.soundhandle = SoundClient()
-# 		rospy.sleep(1)
-# 		self.soundhandle.stopAll()
-# 		# Announce that we are ready for input
-# 		self.soundhandle.playWave(self.wavepath + "R2D2b.wav")
-# 		rospy.sleep(1)
-# 		# self.soundhandle.say("Ready", self.voice)
-# 		rospy.loginfo("Say one of the navigation commands...")
-# 		# Subscribe to the recognizer output
-# 		rospy.Subscriber('/recognizer/output', String, self.confirm_cmd)
-#
-# 	def confirm_cmd(self, msg):
-# 		rospy.loginfo('You Said :: {0}'.format(msg.data))
-# 		self.soundhandle.playWave(self.wavepath + "R2D2c.wav")
-# 		rospy.sleep(1)
-#
-# 		return 0
-#
-# 	def move_base(self):
-# 		pass
-#
-# 	def get_goal_location(self, goal_string):
-# 		pass
 
 def recognize_speech_from_mic(recognizer, microphone):
 	"""Transcribe speech from recorded from `microphone`.
@@ -86,7 +57,8 @@ def recognize_speech_from_mic(recognizer, microphone):
 	response = {
 		"success": True,
 		"error": None,
-		"transcription": None
+		# "transcription": None
+		"transcription": u'Corner one',
 	}
 
 	# try recognizing the speech in the recording
@@ -108,25 +80,110 @@ def recognize_speech_from_mic(recognizer, microphone):
 	return response
 
 
+def generic_motion(seq_list, move_base, soundhandle):
+
+	if seq_list[-1]=="yes":
+		pass
+	elif seq_list[-1]=="no":
+		seq_list = [None, None, None] # cancel all the commands
+	else:
+		print "Do you want me to go {0}".format(seq_list[1])
+		print "Say Yes or No !!!"
+	return True, seq_list
+
+
+def goal_motion(seq_list, move_base, cordinates, soundhandle):
+
+	if seq_list[-1]=="yes":
+		if seq_list[1]!="quit":
+			x, y, z, w = td.get_goal_cordinates(seq_list[1], cordinates, True)
+			if x != None:
+				soundhandle.playWave(wavepath + "R2D2a.wav")
+				result = td.go_to_goal(move_base, x, y, z, w)
+				seq_list = [None, None, None]
+				if not result:
+					soundhandle.playWave(wavepath + "R2D2c.wav")
+					rospy.loginfo("Give Me Another Chance, I'll Make You Proud")
+		else:
+			return False, seq_list
+	elif seq_list[-1]=="no":
+		seq_list = [None, None, None] # cancel all the commands
+	else:
+		print "Do you want me to go {0}".format(seq_list[0])
+		print "Say Yes or No !!!"
+	return True, seq_list
+
+
+def match_responce(response, seq_list):
+	cmd_found = False
+	if seq_list[0]==None:
+		for cmd in VOCAB_DICT["MOTION_CMD"]:
+			ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio()
+			if ratio > 0.7:
+				cmd_found = True
+				seq_list[0] =  "generic_motion"
+				seq_list[1] =  cmd
+
+		if not cmd_found:
+			for cmd in VOCAB_DICT["GOAL_CMD"]:
+				ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio() # "Go to Corner One", "forner One" ratio 0.699
+				if ratio > 0.7:
+					cmd_found = True
+					seq_list[0] =  "goal_motion"
+					seq_list[1] =  cmd
+			if not cmd_found:
+				print "Can You be more clear next time !"
+	else:
+
+		if SequenceMatcher(None, "yes", response["transcription"]).ratio() > 0.7:
+			seq_list[-1] =  "yes"
+		elif SequenceMatcher(None, "no", response["transcription"]).ratio() > 0.7:
+			seq_list[-1] =  "no"
+		else:
+			print "Do you want me to go {0}".format(seq_list[0])
+			print "Say Yes or No !!!"
+
+	return seq_list
+
+
 def obeyer(cordinates, wavepath):
 	soundhandle = SoundClient()
 	recognizer = sr.Recognizer()
 	microphone = sr.Microphone()
-	while True:
-		print "I don't wanna get caught up in the rhythm of it"
-		print "Say Somthing, say something !!!"
+	move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+	soundhandle.playWave(wavepath + "R2D2c.wav")
+	rospy.sleep(1)
+	seq_list = [None, None, None]
+	print "I don't wanna get caught up in the rhythm of it"
+	print "Say Somthing, say something !!!"
+	ret = True
+	while ret:
 		time.sleep(0.2)
+		soundhandle.playWave(wavepath + "R2D2b.wav")
 		response = recognize_speech_from_mic(recognizer, microphone)
+		if response["transcription"]!=None and response["transcription"]!='':
+			seq_list = match_responce(response, seq_list)
+			if seq_list[0]=="generic_motion":
+				ret, seq_list = generic_motion(seq_list, move_base, soundhandle)
+			elif seq_list[0]=="goal_motion":
+				ret, seq_list = goal_motion(seq_list, move_base, cordinates, soundhandle)
+			else:
+				pass
+		else:
+			print "Couldn't hear you Try Again !"
+
+		# {'transcription': u'Corner one', 'success': True, 'error': None}
 		# NOTE:
 		# check is recorded is sucess
 		# check if word falls under dictionary above
 		# if yes play a sound a record yes or no to go ahed with the command else discard the previous commands
 		# in this case mentain what was said last or what goal was set
 
-		print "{0}".format(response)
-
-		print "Sometimes the greatest the way to say something is to say nothing at all \n\n\n!!!"
+		# print "{0}".format(response)
 		time.sleep(0.5)
+	print "Sometimes the greatest the way to say something is to say nothing at all \n\n\n!!!"
+	soundhandle.playWave(wavepath + "R2D2c.wav")
+	rospy.sleep(1)
 
 	return 0
 

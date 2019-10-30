@@ -59,10 +59,13 @@ def go_to_goal(move_base, x, y, z, w):
 		return False
 
 
-def get_goal_cordinates(goal, cordinates):
+def get_goal_cordinates(goal, cordinates, without_dict=False):
 	global ACTION_DICT
 	# print "goalis :: ", goal
-	cord_values = cordinates.loc[cordinates["lable"] == ACTION_DICT[goal].split(" ")[-2].lower()+"_"+ACTION_DICT[goal].split(" ")[-1].lower()].values
+	if without_dict:
+		cord_values = cordinates.loc[cordinates["lable"] == goal.split(" ")[-2].lower()+"_"+goal.split(" ")[-1].lower()].values
+	else:
+		cord_values = cordinates.loc[cordinates["lable"] == ACTION_DICT[goal].split(" ")[-2].lower()+"_"+ACTION_DICT[goal].split(" ")[-1].lower()].values
 	if len(cord_values)>0:
 		x, y, z, w = cord_values[0][1],cord_values[0][2],cord_values[0][3],cord_values[0][4]
 	else:
