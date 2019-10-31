@@ -10,9 +10,9 @@ import pandas as pd
 from difflib import SequenceMatcher
 from std_msgs.msg import String
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import *
 import speech_recognition as sr
-from geometry_msgs.msg import Point
 from sound_play.libsoundplay import SoundClient
 import time
 
@@ -20,8 +20,9 @@ sys.path.insert(1, "/home/{0}/catkin_ws/src/VishwakarmaS/src/".format(getpass.ge
 import touchdown as td
 
 
-VOCAB_DICT = {"MOTION_CMD": ["Stop","Back","Forward","Backward","Left","Right","Rotate", "Yes", "No"],\
-				"GOAL_CMD": ["Corner One","Corner Two","Corner Three","Corner Four","Outside Door","Quit"]}
+VOCAB_DICT = {"MOTION_CMD": ["Stop","Back","Forward","Backward","Left","Right","Rotate"],\
+				"GOAL_CMD": ["Corner One","Corner Two","Corner Three","Corner Four","Outside Door","Quit"],\
+				"DECISION_CMD":["Yes", "No"]}
 
 
 def recognize_speech_from_mic(recognizer, microphone):
@@ -57,8 +58,8 @@ def recognize_speech_from_mic(recognizer, microphone):
 	response = {
 		"success": True,
 		"error": None,
-		# "transcription": None
-		"transcription": u'Corner one',
+		"transcription": None
+		# "transcription": u'Corner one',
 	}
 
 	# try recognizing the speech in the recording
@@ -66,8 +67,8 @@ def recognize_speech_from_mic(recognizer, microphone):
 	#     update the response object accordingly
 	try:
 		start_time = time.time()
-		# response["transcription"] = recognizer.recognize_google(audio)
-		response["transcription"] = recognizer.recognize_sphinx(audio)
+		response["transcription"] = recognizer.recognize_google(audio)
+		# response["transcription"] = recognizer.recognize_sphinx(audio)
 		print "Audio Recognize --- %s seconds ---" % (time.time() - start_time)
 	except sr.RequestError:
 		# API was unreachable or unresponsive
@@ -75,21 +76,43 @@ def recognize_speech_from_mic(recognizer, microphone):
 		response["error"] = "API unavailable"
 	except sr.UnknownValueError:
 		# speech was unintelligible
+		response["success"] = False
 		response["error"] = "Unable to recognize speech"
 
 	return response
 
 
-def generic_motion(seq_list, move_base, soundhandle):
+def generic_motion(seq_list, move_msg, soundhandle):
 
 	if seq_list[-1]=="yes":
-		pass
+		if seq_list[1]=="forward":
+			move_msg.linear.x = 0.2
+			move_msg.angular.z = 0.0
+		elif seq_list[1]=="backward":
+			move_msg.linear.x = -0.2
+			move_msg.angular.z = 0.0
+		elif seq_list[1]=="stop":
+			move_msg.linear.x = 0.0
+			move_msg.angular.z = 0.0
+		elif seq_list[1]=="back":
+			move_msg.linear.x = -0.2
+			move_msg.angular.z = 0.0
+		elif seq_list[1]=="left":
+			move_msg.angular.z = 0.05
+		elif seq_list[1]=="right":
+			move_msg.angular.z = -0.05
+		elif seq_list[1]=="rotate":
+			move_msg.linear.x = 0.0
+			move_msg.angular.z = 1
+		else:
+			pass
 	elif seq_list[-1]=="no":
-		seq_list = [None, None, None] # cancel all the commands
+		seq_list = [None, None, 0, None] # cancel all the commands
 	else:
+		soundhandle.playWave(wavepath + "R2D2b.wav")
 		print "Do you want me to go {0}".format(seq_list[1])
 		print "Say Yes or No !!!"
-	return True, seq_list
+	return True, seq_list, move_msg
 
 
 def goal_motion(seq_list, move_base, cordinates, soundhandle):
@@ -100,45 +123,48 @@ def goal_motion(seq_list, move_base, cordinates, soundhandle):
 			if x != None:
 				soundhandle.playWave(wavepath + "R2D2a.wav")
 				result = td.go_to_goal(move_base, x, y, z, w)
-				seq_list = [None, None, None]
+				seq_list = [None, None, 0, None]
 				if not result:
 					soundhandle.playWave(wavepath + "R2D2c.wav")
 					rospy.loginfo("Give Me Another Chance, I'll Make You Proud")
 		else:
 			return False, seq_list
 	elif seq_list[-1]=="no":
-		seq_list = [None, None, None] # cancel all the commands
+		seq_list = [None, None, 0, None] # cancel all the commands
 	else:
-		print "Do you want me to go {0}".format(seq_list[0])
+		soundhandle.playWave(wavepath + "R2D2b.wav")
+		print "Do you want me to go {0}".format(seq_list[1])
 		print "Say Yes or No !!!"
 	return True, seq_list
 
 
 def match_responce(response, seq_list):
 	cmd_found = False
-	if seq_list[0]==None:
+	if seq_list[0]==None or seq_list[2]==0:
 		for cmd in VOCAB_DICT["MOTION_CMD"]:
 			ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio()
 			if ratio > 0.7:
 				cmd_found = True
-				seq_list[0] =  "generic_motion"
-				seq_list[1] =  cmd
-
+				seq_list[0] = "generic_motion"
+				seq_list[1] = cmd.lower()
+				seq_list[2] = 1
 		if not cmd_found:
 			for cmd in VOCAB_DICT["GOAL_CMD"]:
 				ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio() # "Go to Corner One", "forner One" ratio 0.699
 				if ratio > 0.7:
 					cmd_found = True
-					seq_list[0] =  "goal_motion"
-					seq_list[1] =  cmd
+					seq_list[0] = "goal_motion"
+					seq_list[1] = cmd.lower()
+					seq_list[2] = 1
 			if not cmd_found:
 				print "Can You be more clear next time !"
 	else:
-
 		if SequenceMatcher(None, "yes", response["transcription"]).ratio() > 0.7:
 			seq_list[-1] =  "yes"
+			seq_list[2] = 0
 		elif SequenceMatcher(None, "no", response["transcription"]).ratio() > 0.7:
 			seq_list[-1] =  "no"
+			seq_list[2] = 0
 		else:
 			print "Do you want me to go {0}".format(seq_list[0])
 			print "Say Yes or No !!!"
@@ -150,36 +176,36 @@ def obeyer(cordinates, wavepath):
 	soundhandle = SoundClient()
 	recognizer = sr.Recognizer()
 	microphone = sr.Microphone()
+	move_msg = Twist()
 	move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+	motion_pub = rospy.Publisher("mobile_base/commands/velocity", Twist, queue_size=1)
 	soundhandle.playWave(wavepath + "R2D2c.wav")
 	rospy.sleep(1)
-	seq_list = [None, None, None]
+	seq_list = [None, None, 0, None]
 	print "I don't wanna get caught up in the rhythm of it"
 	print "Say Somthing, say something !!!"
 	ret = True
+	speed = 0.2
+	soundhandle.playWave(wavepath + "R2D2b.wav")
+	time.sleep(0.1)
 	while ret:
-		time.sleep(0.2)
-		soundhandle.playWave(wavepath + "R2D2b.wav")
-		response = recognize_speech_from_mic(recognizer, microphone)
+		response = recognize_speech_from_mic(recognizer, microphone) # {'transcription': u'Corner one', 'success': True, 'error': None}
 		if response["transcription"]!=None and response["transcription"]!='':
 			seq_list = match_responce(response, seq_list)
-			if seq_list[0]=="generic_motion":
-				ret, seq_list = generic_motion(seq_list, move_base, soundhandle)
-			elif seq_list[0]=="goal_motion":
+			if seq_list[0]=="goal_motion":
 				ret, seq_list = goal_motion(seq_list, move_base, cordinates, soundhandle)
+			elif seq_list[0]=="generic_motion":
+				ret, seq_list, move_msg = generic_motion(seq_list, move_msg, soundhandle)
 			else:
 				pass
 		else:
+			soundhandle.playWave(wavepath + "R2D2b.wav")
 			print "Couldn't hear you Try Again !"
-
-		# {'transcription': u'Corner one', 'success': True, 'error': None}
-		# NOTE:
-		# check is recorded is sucess
-		# check if word falls under dictionary above
-		# if yes play a sound a record yes or no to go ahed with the command else discard the previous commands
-		# in this case mentain what was said last or what goal was set
-
-		# print "{0}".format(response)
+		if seq_list[0]=="generic_motion":
+			motion_pub.publish(move_msg)
+		else:
+			move_msg = Twist()
+			motion_pub.publish(move_msg)
 		time.sleep(0.5)
 	print "Sometimes the greatest the way to say something is to say nothing at all \n\n\n!!!"
 	soundhandle.playWave(wavepath + "R2D2c.wav")
