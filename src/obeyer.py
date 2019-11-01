@@ -194,13 +194,14 @@ def obeyer(cordinates, wavepath):
 	while ret:
 		time.sleep(0.1)
 		print "The Command {0}".format(seq_cmd)
+		# seq_cmd = u'forward'
 		response = recognize_speech_from_mic(recognizer, microphone) # {'transcription': u'Corner one', 'success': True, 'error': None}
 		print "{0}".format(response)
 		if response["transcription"]!=None and response["transcription"]!='':
 			seq_cmd = match_responce(response, seq_cmd)
 			if seq_cmd in VOCAB_DICT["GOAL_CMD"]:
 				ret, seq_cmd = goal_motion(seq_cmd, move_base, cordinates, soundhandle, wavepath)
-			elif seq_list[0]=="generic_motion":
+			elif seq_cmd in VOCAB_DICT["MOTION_CMD"]:
 				ret, seq_cmd, move_msg = generic_motion(seq_cmd, move_msg, soundhandle, wavepath)
 			else:
 				pass
