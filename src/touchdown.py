@@ -5,6 +5,7 @@ Script to move to Map location - Assignment 3 Part 1
 import os
 import rospy
 import time
+import getpass
 import pandas as pd
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -99,7 +100,7 @@ def main():
 	# cordinates = pd.read_csv("../res/assign3InitPos")
 	try:
 		# cordinates = pd.read_csv("/home/orcrist/catkin_ws/src/VishwakarmaS/res/assign3InitPos")
-		cordinates = pd.read_csv("../catkin_ws/src/VishwakarmaS/res/assign3InitPos")
+		cordinates = pd.read_csv("/home/{0}/catkin_ws/src/VishwakarmaS/res/assign3InitPos".format(getpass.getuser()))
 		rospy.init_node('touchdown', anonymous=False)
 		rospy.loginfo("Working DIR :: {0}".format(os.getcwd()))
 		move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)

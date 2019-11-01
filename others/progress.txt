@@ -28,4 +28,7 @@ https://pypi.org/project/PyAudio/#files Use the v0.2.11
 Installing pocketsphinx python2
 https://pypi.org/project/pocketsphinx/
 https://pypi.org/project/launchpadlib/
+
+install sound play for ros
+
 sudo apt-get install swig

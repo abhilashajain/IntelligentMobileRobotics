@@ -26,6 +26,7 @@ VOCAB_DICT = {"MOTION_CMD": ["Stop","Back","Forward","Backward","Left","Right","
 
 
 def recognize_speech_from_mic(recognizer, microphone):
+	# NOTE: This function is taken from the documentations
 	"""Transcribe speech from recorded from `microphone`.
 
 	Returns a dictionary with three keys:
@@ -53,7 +54,8 @@ def recognize_speech_from_mic(recognizer, microphone):
 		recognizer.record(source, duration=2)
 		audio = recognizer.listen(source)
 
-	print "Audio Capturing --- %s seconds ---" % (time.time() - start_time)
+	# print "Audio Capturing --- %s seconds ---" % (time.time() - start_time)
+	rospy.loginfo("Audio Capturing --- %s seconds ---" % (time.time() - start_time))
 	# set up the response object
 	response = {
 		"success": True,
@@ -69,7 +71,8 @@ def recognize_speech_from_mic(recognizer, microphone):
 		start_time = time.time()
 		response["transcription"] = recognizer.recognize_google(audio)
 		# response["transcription"] = recognizer.recognize_sphinx(audio)
-		print "Audio Recognize --- %s seconds ---" % (time.time() - start_time)
+		# print "Audio Recognize --- %s seconds ---" % (time.time() - start_time)
+		rospy.loginfo("Audio Recognize --- %s seconds ---" % (time.time() - start_time))
 	except sr.RequestError:
 		# API was unreachable or unresponsive
 		response["success"] = False
@@ -110,8 +113,10 @@ def generic_motion(seq_list, move_msg, soundhandle):
 		seq_list = [None, None, 0, None] # cancel all the commands
 	else:
 		soundhandle.playWave(wavepath + "R2D2b.wav")
-		print "Do you want me to go {0}".format(seq_list[1])
-		print "Say Yes or No !!!"
+		rospy.loginfo("Do you want me to go {0}".format(seq_list[1]))
+		rospy.loginfo("Say Yes or No !!!")
+		# print "Do you want me to go {0}".format(seq_list[1])
+		# print "Say Yes or No !!!"
 	return True, seq_list, move_msg
 
 
@@ -133,8 +138,10 @@ def goal_motion(seq_list, move_base, cordinates, soundhandle):
 		seq_list = [None, None, 0, None] # cancel all the commands
 	else:
 		soundhandle.playWave(wavepath + "R2D2b.wav")
-		print "Do you want me to go {0}".format(seq_list[1])
-		print "Say Yes or No !!!"
+		rospy.loginfo("Do you want me to go {0}".format(seq_list[1]))
+		rospy.loginfo("Say Yes or No !!!")
+		# print "Do you want me to go {0}".format(seq_list[1])
+		# print "Say Yes or No !!!"
 	return True, seq_list
 
 
@@ -157,7 +164,8 @@ def match_responce(response, seq_list):
 					seq_list[1] = cmd.lower()
 					seq_list[2] = 1
 			if not cmd_found:
-				print "Can You be more clear next time !"
+				rospy.loginfo("Can You be more clear next time !")
+				# print "Can You be more clear next time !"
 	else:
 		if SequenceMatcher(None, "yes", response["transcription"]).ratio() > 0.7:
 			seq_list[-1] =  "yes"
@@ -166,8 +174,10 @@ def match_responce(response, seq_list):
 			seq_list[-1] =  "no"
 			seq_list[2] = 0
 		else:
-			print "Do you want me to go {0}".format(seq_list[0])
-			print "Say Yes or No !!!"
+			rospy.loginfo("Do you want me to select {0}".format(seq_list[0]))
+			rospy.loginfo("Say Yes or No !!!")
+			# print "Do you want me to go {0}".format(seq_list[0])
+			# print "Say Yes or No !!!"
 
 	return seq_list
 
@@ -182,8 +192,10 @@ def obeyer(cordinates, wavepath):
 	soundhandle.playWave(wavepath + "R2D2c.wav")
 	rospy.sleep(1)
 	seq_list = [None, None, 0, None]
-	print "I don't wanna get caught up in the rhythm of it"
-	print "Say Somthing, say something !!!"
+	rospy.loginfo("I don't wanna get caught up in the rhythm of it")
+	rospy.loginfo("Say Somthing, say something !!!")
+	# print "I don't wanna get caught up in the rhythm of it"
+	# print "Say Somthing, say something !!!"
 	ret = True
 	speed = 0.2
 	soundhandle.playWave(wavepath + "R2D2b.wav")
@@ -200,7 +212,8 @@ def obeyer(cordinates, wavepath):
 				pass
 		else:
 			soundhandle.playWave(wavepath + "R2D2b.wav")
-			print "Couldn't hear you Try Again !"
+			rospy.loginfo("Couldn't hear you Try Again !")
+			# print "Couldn't hear you Try Again !"
 		if seq_list[0]=="generic_motion":
 			motion_pub.publish(move_msg)
 		elif not ret:
@@ -209,7 +222,8 @@ def obeyer(cordinates, wavepath):
 			move_msg = Twist()
 			motion_pub.publish(move_msg)
 		time.sleep(0.5)
-	print "Sometimes the greatest the way to say something is to say nothing at all \n\n\n!!!"
+	rospy.loginfo("Sometimes the greatest the way to say something is to say nothing at all \n\n\n!!!")
+	# print "Sometimes the greatest the way to say something is to say nothing at all \n\n\n!!!"
 	soundhandle.playWave(wavepath + "R2D2c.wav")
 	rospy.sleep(1)
 
