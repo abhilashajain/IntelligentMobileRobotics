@@ -203,6 +203,8 @@ def obeyer(cordinates, wavepath):
 			print "Couldn't hear you Try Again !"
 		if seq_list[0]=="generic_motion":
 			motion_pub.publish(move_msg)
+		elif not ret:
+			pass
 		else:
 			move_msg = Twist()
 			motion_pub.publish(move_msg)
