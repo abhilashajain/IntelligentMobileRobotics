@@ -16,22 +16,26 @@ from geometry_msgs.msg import Point
 
 
 ACTION_DICT = {"1":"Go to Corner One","2":"Go to Corner Two","3":"Go to Corner Three","4":"Go to Corner Four","5":"Go Outside Door","0":"Quit"}
-
+goal_loc = 0
 
 def get_goal():
-
-	goal = ""
+	global goal_loc
+	goal = "5"
+	# goal_loc = goal_loc+1
 	# print "\n\nSelect a Goal\n"
-	rospy.loginfo("\n\n Select a Goal")
-	for key in ACTION_DICT:
-		print "{0} :: {1}".format(key, ACTION_DICT[key])
-		rospy.loginfo("{0} :: {1}".format(key, ACTION_DICT[key]))
-	rospy.loginfo("\n\n")
-	# print "\n\n"
-	goal = str(input())
-	# goal = input()
-	# print "Typed:: ", goal
-	# print "Data Typed:: ", type(goal)
+	# rospy.loginfo("\n\n Select a Goal")
+	# for key in ACTION_DICT:
+	# 	print "{0} :: {1}".format(key, ACTION_DICT[key])
+	# 	rospy.loginfo("{0} :: {1}".format(key, ACTION_DICT[key]))
+	# rospy.loginfo("\n\n")
+	# # print "\n\n"
+	# goal = str(input())
+	# # goal = input()
+	# # print "Typed:: ", goal
+	# goal = str(goal_loc)
+	print "Data Typed:: ", type(goal)
+	time.sleep(2)
+
 	return goal
 
 
