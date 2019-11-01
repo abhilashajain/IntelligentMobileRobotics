@@ -37,20 +37,23 @@ def recognize_speech_from_mic(recognizer, microphone):
 	"transcription": `None` if speech could not be transcribed,
 			   otherwise a string containing the transcribed text
 	"""
-	# # check that recognizer and microphone arguments are appropriate type
-
-	if not isinstance(recognizer, sr.Recognizer):
-		raise TypeError("`recognizer` must be `Recognizer` instance")
-
-	if not isinstance(microphone, sr.Microphone):
-		raise TypeError("`microphone` must be `Microphone` instance")
-
-	# # adjust the recognizer sensitivity to ambient noise and record audio
-	# from the microphone
+	# # # check that recognizer and microphone arguments are appropriate type
+	#
+	# if not isinstance(recognizer, sr.Recognizer):
+	# 	raise TypeError("`recognizer` must be `Recognizer` instance")
+	#
+	# if not isinstance(microphone, sr.Microphone):
+	# 	raise TypeError("`microphone` must be `Microphone` instance")
+	#
+	# # # adjust the recognizer sensitivity to ambient noise and record audio
+	# # from the microphone
 	start_time = time.time()
 	with microphone as source:
-		recognizer.adjust_for_ambient_noise(source, duration=1)
+		print "recording"
+		# recognizer.adjust_for_ambient_noise(source, duration=0.5)
+		recognizer.adjust_for_ambient_noise(source, duration = 2.0)
 		# recognizer.record(source)
+		print "listning"
 		audio = recognizer.listen(source)
 	print "Audio Capturing --- %s seconds ---" % (time.time() - start_time)
 	# set up the response object
@@ -85,21 +88,21 @@ def generic_motion(seq_cmd, move_msg, soundhandle, wavepath):
 
 	# if seq_list[-1]=="yes":
 	if seq_cmd=="forward":
-		move_msg.linear.x = 0.2
+		move_msg.linear.x = 0.5
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="backward":
-		move_msg.linear.x = -0.2
+		move_msg.linear.x = -0.5
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="stop":
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="back":
-		move_msg.linear.x = -0.2
+		move_msg.linear.x = -0.5
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="left":
-		move_msg.angular.z = 0.05
+		move_msg.angular.z = 0.10
 	elif seq_cmd=="right":
-		move_msg.angular.z = -0.05
+		move_msg.angular.z = -0.10
 	elif seq_cmd=="rotate":
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 1
@@ -118,7 +121,7 @@ def goal_motion(seq_cmd, move_base, cordinates, soundhandle, wavepath):
 
 	# if seq_list[-1]=="yes":
 	if seq_cmd !="quit":
-		x, y, z, w = td.get_goal_cordinates(seq_list[1], cordinates, True)
+		x, y, z, w = td.get_goal_cordinates(seq_cmd, cordinates, True)
 		if x != None:
 			soundhandle.playWave(wavepath + "R2D2a.wav")
 			result = td.go_to_goal(move_base, x, y, z, w)
