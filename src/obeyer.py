@@ -85,21 +85,21 @@ def generic_motion(seq_cmd, move_msg, soundhandle, wavepath):
 
 	# if seq_list[-1]=="yes":
 	if seq_cmd=="forward":
-		move_msg.linear.x = 0.4
+		move_msg.linear.x = 0.2
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="backward":
-		move_msg.linear.x = -0.4
+		move_msg.linear.x = -0.2
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="stop":
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="back":
-		move_msg.linear.x = -0.5
+		move_msg.linear.x = -0.2
 		move_msg.angular.z = 0.0
 	elif seq_cmd=="left":
-		move_msg.angular.z = 0.10
+		move_msg.angular.z = 0.05
 	elif seq_cmd=="right":
-		move_msg.angular.z = -0.10
+		move_msg.angular.z = -0.05
 	elif seq_cmd=="rotate":
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 1
