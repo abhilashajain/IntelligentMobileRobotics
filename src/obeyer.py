@@ -20,9 +20,9 @@ sys.path.insert(1, "/home/{0}/catkin_ws/src/VishwakarmaS/src/".format(getpass.ge
 import touchdown as td
 
 
-VOCAB_DICT = {"MOTION_CMD": ["Stop","Back","Forward","Backward","Left","Right","Rotate"],\
-				"GOAL_CMD": ["Corner One","Corner Two","Corner Three","Corner Four","Outside Door","Quit"],\
-				"DECISION_CMD":["Yes", "No"]}
+VOCAB_DICT = {"MOTION_CMD": ["stop","back","forward","backward","left","right","rotate"],\
+				"GOAL_CMD": ["corner one","corner two","corner three","corner four","outside door","quit"],\
+				"DECISION_CMD":["yes", "no"]}
 
 
 def recognize_speech_from_mic(recognizer, microphone):
@@ -193,7 +193,7 @@ def obeyer(cordinates, wavepath):
 	soundhandle.playWave(wavepath + "R2D2b.wav")
 	while ret:
 		time.sleep(0.1)
-		print "Im here "
+		print "The Command {0}".format(seq_cmd)
 		response = recognize_speech_from_mic(recognizer, microphone) # {'transcription': u'Corner one', 'success': True, 'error': None}
 		print "{0}".format(response)
 		if response["transcription"]!=None and response["transcription"]!='':
