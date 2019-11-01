@@ -82,94 +82,97 @@ def recognize_speech_from_mic(recognizer, microphone):
 	return response
 
 
-def generic_motion(seq_list, move_msg, soundhandle, wavepath):
+def generic_motion(seq_cmd, move_msg, soundhandle, wavepath):
 
-	if seq_list[-1]=="yes":
-		if seq_list[1]=="forward":
-			move_msg.linear.x = 0.4
-			move_msg.angular.z = 0.0
-		elif seq_list[1]=="backward":
-			move_msg.linear.x = -0.4
-			move_msg.angular.z = 0.0
-		elif seq_list[1]=="stop":
-			move_msg.linear.x = 0.0
-			move_msg.angular.z = 0.0
-		elif seq_list[1]=="back":
-			move_msg.linear.x = -0.5
-			move_msg.angular.z = 0.0
-		elif seq_list[1]=="left":
-			move_msg.angular.z = 0.10
-		elif seq_list[1]=="right":
-			move_msg.angular.z = -0.10
-		elif seq_list[1]=="rotate":
-			move_msg.linear.x = 0.0
-			move_msg.angular.z = 1
-		else:
-			pass
-	elif seq_list[-1]=="no":
-		seq_list = [None, None, 0, None] # cancel all the commands
+	# if seq_list[-1]=="yes":
+	if seq_list[1]=="forward":
+		move_msg.linear.x = 0.4
+		move_msg.angular.z = 0.0
+	elif seq_list[1]=="backward":
+		move_msg.linear.x = -0.4
+		move_msg.angular.z = 0.0
+	elif seq_list[1]=="stop":
+		move_msg.linear.x = 0.0
+		move_msg.angular.z = 0.0
+	elif seq_list[1]=="back":
+		move_msg.linear.x = -0.5
+		move_msg.angular.z = 0.0
+	elif seq_list[1]=="left":
+		move_msg.angular.z = 0.10
+	elif seq_list[1]=="right":
+		move_msg.angular.z = -0.10
+	elif seq_list[1]=="rotate":
+		move_msg.linear.x = 0.0
+		move_msg.angular.z = 1
+	else:
+		pass
+	# elif seq_list[-1]=="no":
+		# seq_list = [None, None, 0, None] # cancel all the commands
+	# else:
+		soundhandle.playWave(wavepath + "R2D2b.wav")
+		# print "Do you want me to go {0}".format(seq_list[1])
+		# print "Say Yes or No !!!"
+	return True, seq_cmd, move_msg
+
+
+def goal_motion(seq_cmd, move_base, cordinates, soundhandle, wavepath):
+
+	# if seq_list[-1]=="yes":
+	if seq_cmd !="quit":
+		x, y, z, w = td.get_goal_cordinates(seq_list[1], cordinates, True)
+		if x != None:
+			soundhandle.playWave(wavepath + "R2D2a.wav")
+			result = td.go_to_goal(move_base, x, y, z, w)
+			seq_cmd = "" # [None, None, 0, None]
+			if not result:
+				soundhandle.playWave(wavepath + "R2D2c.wav")
+				rospy.loginfo("Give Me Another Chance, I'll Make You Proud")
 	else:
 		soundhandle.playWave(wavepath + "R2D2b.wav")
-		print "Do you want me to go {0}".format(seq_list[1])
-		print "Say Yes or No !!!"
-	return True, seq_list, move_msg
+		return False, ""
+	# elif seq_list[-1]=="no":
+	# 	seq_list = [None, None, 0, None] # cancel all the commands
+	# else:
+	# 	print "Do you want me to go {0}".format(seq_list[1])
+	# 	print "Say Yes or No !!!"
+	return True, seq_cmd
 
 
-def goal_motion(seq_list, move_base, cordinates, soundhandle, wavepath):
-
-	if seq_list[-1]=="yes":
-		if seq_list[1]!="quit":
-			x, y, z, w = td.get_goal_cordinates(seq_list[1], cordinates, True)
-			if x != None:
-				soundhandle.playWave(wavepath + "R2D2a.wav")
-				result = td.go_to_goal(move_base, x, y, z, w)
-				seq_list = [None, None, 0, None]
-				if not result:
-					soundhandle.playWave(wavepath + "R2D2c.wav")
-					rospy.loginfo("Give Me Another Chance, I'll Make You Proud")
-		else:
-			return False, seq_list
-	elif seq_list[-1]=="no":
-		seq_list = [None, None, 0, None] # cancel all the commands
-	else:
-		soundhandle.playWave(wavepath + "R2D2b.wav")
-		print "Do you want me to go {0}".format(seq_list[1])
-		print "Say Yes or No !!!"
-	return True, seq_list
-
-
-def match_responce(response, seq_list):
+def match_responce(response, seq_cmd):
 	cmd_found = False
-	if seq_list[0]==None or seq_list[2]==0:
-		for cmd in VOCAB_DICT["MOTION_CMD"]:
-			ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio()
+	# if seq_list[0]==None or seq_list[2]==0:
+	for cmd in VOCAB_DICT["MOTION_CMD"]:
+		ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio()
+		if ratio > 0.7:
+			cmd_found = True
+			# seq_list[0] = "generic_motion"
+			# seq_list[1] = cmd.lower()
+			seq_cmd = cmd.lower()
+			# seq_list[2] = 1
+	if not cmd_found:
+		for cmd in VOCAB_DICT["GOAL_CMD"]:
+			ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio() # "Go to Corner One", "forner One" ratio 0.699
 			if ratio > 0.7:
 				cmd_found = True
-				seq_list[0] = "generic_motion"
-				seq_list[1] = cmd.lower()
-				seq_list[2] = 1
+				seq_cmd = cmd.lower()
+				# seq_list[0] = "goal_motion"
+				# seq_list[1] = cmd.lower()
+				# seq_list[2] = 1
 		if not cmd_found:
-			for cmd in VOCAB_DICT["GOAL_CMD"]:
-				ratio = SequenceMatcher(None, cmd, response["transcription"]).ratio() # "Go to Corner One", "forner One" ratio 0.699
-				if ratio > 0.7:
-					cmd_found = True
-					seq_list[0] = "goal_motion"
-					seq_list[1] = cmd.lower()
-					seq_list[2] = 1
-			if not cmd_found:
-				print "Can You be more clear next time !"
-	else:
-		if SequenceMatcher(None, "yes", response["transcription"]).ratio() > 0.7:
-			seq_list[-1] =  "yes"
-			seq_list[2] = 0
-		elif SequenceMatcher(None, "no", response["transcription"]).ratio() > 0.7:
-			seq_list[-1] =  "no"
-			seq_list[2] = 0
-		else:
-			print "Do you want me to go {0}".format(seq_list[0])
-			print "Say Yes or No !!!"
+			print "Can You be more clear next time !"
+	# else:
+	# 	if SequenceMatcher(None, "yes", response["transcription"]).ratio() > 0.7:
+	# 		seq_list[-1] =  "yes"
+	# 		seq_list[2] = 0
+	#
+	# 	elif SequenceMatcher(None, "no", response["transcription"]).ratio() > 0.7:
+	# 		seq_list[-1] =  "no"
+	# 		seq_list[2] = 0
+	# 	else:
+	# 		print "Do you want me to go {0}".format(seq_list[0])
+	# 		print "Say Yes or No !!!"
 
-	return seq_list
+	return seq_cmd
 
 
 def obeyer(cordinates, wavepath):
@@ -182,6 +185,7 @@ def obeyer(cordinates, wavepath):
 	soundhandle.playWave(wavepath + "R2D2c.wav")
 	rospy.sleep(1)
 	seq_list = [None, None, 0, None]
+	seq_cmd = ""
 	print "I don't wanna get caught up in the rhythm of it"
 	print "Say Somthing, say something !!!"
 	ret = True
@@ -191,17 +195,17 @@ def obeyer(cordinates, wavepath):
 	while ret:
 		response = recognize_speech_from_mic(recognizer, microphone) # {'transcription': u'Corner one', 'success': True, 'error': None}
 		if response["transcription"]!=None and response["transcription"]!='':
-			seq_list = match_responce(response, seq_list)
-			if seq_list[0]=="goal_motion":
-				ret, seq_list = goal_motion(seq_list, move_base, cordinates, soundhandle, wavepath)
+			seq_cmd = match_responce(response, seq_cmd)
+			if seq_cmd in VOCAB_DICT["GOAL_CMD"]:
+				ret, seq_cmd = goal_motion(seq_cmd, move_base, cordinates, soundhandle, wavepath)
 			elif seq_list[0]=="generic_motion":
-				ret, seq_list, move_msg = generic_motion(seq_list, move_msg, soundhandle, wavepath)
+				ret, seq_cmd, move_msg = generic_motion(seq_cmd, move_msg, soundhandle, wavepath)
 			else:
 				pass
 		else:
 			soundhandle.playWave(wavepath + "R2D2b.wav")
 			print "Couldn't hear you Try Again !"
-		if seq_list[0]=="generic_motion":
+		if seq_cmd !="":
 			motion_pub.publish(move_msg)
 		elif not ret:
 			pass
