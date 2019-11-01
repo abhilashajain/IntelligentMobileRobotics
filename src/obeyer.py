@@ -38,6 +38,7 @@ def recognize_speech_from_mic(recognizer, microphone):
 			   otherwise a string containing the transcribed text
 	"""
 	# # check that recognizer and microphone arguments are appropriate type
+
 	if not isinstance(recognizer, sr.Recognizer):
 		raise TypeError("`recognizer` must be `Recognizer` instance")
 
@@ -47,12 +48,10 @@ def recognize_speech_from_mic(recognizer, microphone):
 	# # adjust the recognizer sensitivity to ambient noise and record audio
 	# from the microphone
 	start_time = time.time()
-
 	with microphone as source:
-		# recognizer.adjust_for_ambient_noise(source, duration=0.5)
-		recognizer.record(source)
+		recognizer.adjust_for_ambient_noise(source, duration=1)
+		# recognizer.record(source)
 		audio = recognizer.listen(source)
-
 	print "Audio Capturing --- %s seconds ---" % (time.time() - start_time)
 	# set up the response object
 	response = {
@@ -105,7 +104,7 @@ def generic_motion(seq_cmd, move_msg, soundhandle, wavepath):
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 1
 	else:
-		pass
+		# pass
 	# elif seq_list[-1]=="no":
 		# seq_list = [None, None, 0, None] # cancel all the commands
 	# else:
@@ -177,6 +176,7 @@ def match_responce(response, seq_cmd):
 
 def obeyer(cordinates, wavepath):
 	soundhandle = SoundClient()
+	# soundhandle = None
 	recognizer = sr.Recognizer()
 	microphone = sr.Microphone()
 	move_msg = Twist()
@@ -191,9 +191,11 @@ def obeyer(cordinates, wavepath):
 	ret = True
 	speed = 0.2
 	soundhandle.playWave(wavepath + "R2D2b.wav")
-	time.sleep(0.1)
 	while ret:
+		time.sleep(0.1)
+		print "Im here "
 		response = recognize_speech_from_mic(recognizer, microphone) # {'transcription': u'Corner one', 'success': True, 'error': None}
+		print "{0}".format(response)
 		if response["transcription"]!=None and response["transcription"]!='':
 			seq_cmd = match_responce(response, seq_cmd)
 			if seq_cmd in VOCAB_DICT["GOAL_CMD"]:
