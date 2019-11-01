@@ -84,23 +84,23 @@ def recognize_speech_from_mic(recognizer, microphone):
 def generic_motion(seq_cmd, move_msg, soundhandle, wavepath):
 
 	# if seq_list[-1]=="yes":
-	if seq_list[1]=="forward":
+	if seq_cmd=="forward":
 		move_msg.linear.x = 0.4
 		move_msg.angular.z = 0.0
-	elif seq_list[1]=="backward":
+	elif seq_cmd=="backward":
 		move_msg.linear.x = -0.4
 		move_msg.angular.z = 0.0
-	elif seq_list[1]=="stop":
+	elif seq_cmd=="stop":
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 0.0
-	elif seq_list[1]=="back":
+	elif seq_cmd=="back":
 		move_msg.linear.x = -0.5
 		move_msg.angular.z = 0.0
-	elif seq_list[1]=="left":
+	elif seq_cmd=="left":
 		move_msg.angular.z = 0.10
-	elif seq_list[1]=="right":
+	elif seq_cmd=="right":
 		move_msg.angular.z = -0.10
-	elif seq_list[1]=="rotate":
+	elif seq_cmd=="rotate":
 		move_msg.linear.x = 0.0
 		move_msg.angular.z = 1
 	else:
