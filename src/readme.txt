@@ -1,5 +1,11 @@
 # Assignment 3
 
+
+Submitted by:
+  Sagar Vishwakarma - svishwa2@binghamton.edu (BU - B00814586)
+  Abhilasha Jain - ajain35@binghamton.edu (BU - B00817064)
+
+
 Part 1:
 
 Navigation In the Lab LNG210
