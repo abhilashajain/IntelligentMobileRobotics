@@ -16,26 +16,29 @@ from geometry_msgs.msg import Point
 
 
 ACTION_DICT = {"1":"Go to Corner One","2":"Go to Corner Two","3":"Go to Corner Three","4":"Go to Corner Four","5":"Go Outside Door","0":"Quit"}
-goal_loc = 0
+GOAL_START = 0
 
-def get_goal():
-	global goal_loc
-	goal = "5"
-	# goal_loc = goal_loc+1
+
+def sequence_goals():
+	global GOAL_START
+	if GOAL_START > 4:
+		GOAL_START = 0
+	else:
+		GOAL_START = GOAL_START + 1
+
+	goal = str(GOAL_START)
+	return goal
+
+
+def get_user_goal():
 	# print "\n\nSelect a Goal\n"
-	# rospy.loginfo("\n\n Select a Goal")
-	# for key in ACTION_DICT:
-	# 	print "{0} :: {1}".format(key, ACTION_DICT[key])
-	# 	rospy.loginfo("{0} :: {1}".format(key, ACTION_DICT[key]))
-	# rospy.loginfo("\n\n")
-	# # print "\n\n"
-	# goal = str(input())
-	# # goal = input()
-	# # print "Typed:: ", goal
-	# goal = str(goal_loc)
-	print "Data Typed:: ", type(goal)
-	time.sleep(2)
-
+	rospy.loginfo("\n\n Select a Goal")
+	for key in ACTION_DICT:
+		print "{0} :: {1}".format(key, ACTION_DICT[key])
+		rospy.loginfo("{0} :: {1}".format(key, ACTION_DICT[key]))
+	rospy.loginfo("\n\n")
+	goal = str(input())
+	time.sleep(1)
 	return goal
 
 
@@ -82,8 +85,9 @@ def get_goal_cordinates(goal, cordinates, without_dict=False):
 
 def touchdown(move_base, cordinates):
 
-	goal = get_goal()
-	if goal == "q":
+	goal = sequence_goals() # this is to sequentially go through all 4 goals one after the other
+	# goal = get_user_goal() # this is to ask user which goal to reach
+	if goal == "0":
 		# print "Bye Bye"
 		rospy.loginfo("Bye Bye")
 	elif goal != "0" and goal in ACTION_DICT:
@@ -101,9 +105,7 @@ def touchdown(move_base, cordinates):
 
 def main():
 
-	# cordinates = pd.read_csv("../res/assign3InitPos")
 	try:
-		# cordinates = pd.read_csv("/home/orcrist/catkin_ws/src/VishwakarmaS/res/assign3InitPos")
 		cordinates = pd.read_csv("/home/{0}/catkin_ws/src/VishwakarmaS/res/assign3InitPos".format(getpass.getuser()))
 		rospy.init_node('touchdown', anonymous=False)
 		rospy.loginfo("Working DIR :: {0}".format(os.getcwd()))
