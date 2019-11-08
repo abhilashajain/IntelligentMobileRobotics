@@ -1,34 +1,35 @@
 NOTE : Just create a python file and complete the assignment, while submitting use the VishwakarmaS.py to follow the assignment guidlines
 
-Assignment 3
+Assignment 4
 
-Step 1
-roslaunch turtlebot_bringup minimal.launch ### for starting the TurtleBot base functionality.
+To Launch Aster camera:
 
-Step 2
-roslaunch turtlebot_rviz_launchers view_navigation.launch
+Step 1 :: roslaunch turtlebot_bringup minimal.launch --screen
 
-Step 3
-roslaunch turtlebot_navigation amcl_demo.launch map_file:=/home/svishwa2/catkin_ws/src/VishwakarmaS/maps/lng210.yaml
+Step 2 :: roslaunch astra_launch astra.launch --screen
+
+Step 3 :: rosrun image_view image_view image:=/camera/rgb/image_raw (change the topic according to need)
+          you can also run multiple views at same time
 
 
-To clear the cost map, so that the robot can move ahead removing the obstacles.
-rosservice call /move_base/clear_costmaps
+Installations ::
 
-https://github.com/cmusphinx/ros-pocketsphinx for installing packages
-sudo apt-get install gstreamer1.0-pocketsphinx  # as the package is updated to 1.0
+# sudo apt-get install python-opencv
 
-https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
-Working DIR :: /home/svishwa2/.ros
+# sudo apt-get install ros-kinetic-cv-bridge
 
-https://realpython.com/python-speech-recognition/
+# sudo apt-get install ros-kinetic-vision-opencv
 
-https://pypi.org/project/PyAudio/#files Use the v0.2.11
+Also ROS PKG Install :: cv_bridge, vision_opencv, image_transport
 
-Installing pocketsphinx python2
-https://pypi.org/project/pocketsphinx/
-https://pypi.org/project/launchpadlib/
 
-install sound play for ros
+Links ::
 
-sudo apt-get install swig
+Ball tracking with OpenCV
+https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
+
+ROS OpenCV Image Processing (Python) This is Helpful
+https://industrial-training-master.readthedocs.io/en/melodic/_source/session5/OpenCV-in-Python.html
+
+OpenCV with ROS using Python Very Helpful
+https://dabit-industries.github.io/turtlebot2-tutorials/14b-OpenCV2_Python.html
