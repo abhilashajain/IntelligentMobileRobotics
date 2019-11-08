@@ -17,7 +17,7 @@ def show_image(img):
   cv2.waitKey(3)
 
 # Define a callback for the Image message
-def image_callback(img_msg, ):
+def image_callback(img_msg, bridge):
   # log some info about the image topic
   rospy.loginfo(img_msg.header)
 

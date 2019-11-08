@@ -33,3 +33,18 @@ https://industrial-training-master.readthedocs.io/en/melodic/_source/session5/Op
 
 OpenCV with ROS using Python Very Helpful
 https://dabit-industries.github.io/turtlebot2-tutorials/14b-OpenCV2_Python.html
+
+
+Running coursing.py
+
+launch bringup, astra
+
+
+Image Not being displayed ::
+
+rosrun VishwakarmaS coursing.py
+[INFO] [1573240241.797955]: seq: 0
+stamp:
+  secs: 1573240241
+  nsecs: 754485123
+frame_id: "camera_rgb_optical_frame"
