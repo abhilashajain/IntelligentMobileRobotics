@@ -48,3 +48,7 @@ stamp:
   secs: 1573240241
   nsecs: 754485123
 frame_id: "camera_rgb_optical_frame"
+
+Dont run a window in OpenCV Just access the topic and get the
+camera data and then porcess it and send control command to publisher topic
+Use the pring data to detect the boll and move robot

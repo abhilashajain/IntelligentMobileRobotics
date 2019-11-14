@@ -8,6 +8,7 @@ from sensor_msgs.msg import Image
 
 # Import OpenCV libraries and tools
 import cv2
+import time
 from cv_bridge import CvBridge, CvBridgeError
 
 
@@ -30,19 +31,24 @@ def image_callback(img_msg, bridge):
   # Flip the image 90deg
   cv_image = cv2.transpose(cv_image)
   cv_image = cv2.flip(cv_image,1)
+  print "IMAGE DATA \n"
+  print cv_image, "\n"
+  time.sleep(2)
 
   # Show the converted image
-  show_image(cv_image)
+  # show_image(cv_image)
+
 
 
 def main():
     rospy.init_node('coursing', anonymous=False)
     bridge = CvBridge() # Initialize the CvBridge class
     callback_lambda = lambda x: image_callback(x,bridge)
-    sub_image = rospy.Subscriber("/camera/rgb/image_raw", Image, callback_lambda)
-    cv2.namedWindow("Image Window", 1)
+    sub_image = rospy.Subscriber("/camera/rgb/image_raw", Image, callback_lambda, queue_size=1)
+    # cv2.namedWindow("Image Window", 1)
     while not rospy.is_shutdown():
       rospy.spin()
+      time.sleep(1)
     return 0
 
 if __name__ == '__main__':
