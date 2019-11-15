@@ -7,7 +7,7 @@ from __future__ import print_function
 import rospy
 from sensor_msgs.msg import Image
 from collections import deque
-
+from geometry_msgs.msg import Twist
 # Import OpenCV libraries and tools
 import cv2
 import numpy as np
@@ -23,7 +23,7 @@ RED_LOWER_BOUNDS_1 = (160, 100, 100)
 RED_UPPER_BOUNDS_1 = (180, 255, 255)
 POINTS = deque(maxlen=32)
 COUNTER = 0
-
+SAVEIMG = True
 CIRCLE_RADIUS = 2
 
 # Define a function to show the image in an OpenCV Window
@@ -134,28 +134,28 @@ def get_motion_command(direction):
 	direction.replace("west","left")
 	direction.replace("south","back")
 
-	if motion_dict == "left":
+	if direction == "left":
 		move_msg.linear.x = 0
 		move_msg.angular.z = 0.3
-	elif motion_dict == "right":
+	elif direction == "right":
 		move_msg.linear.x = 0
 		move_msg.angular.z = -0.3
-	elif motion_dict == "front":
+	elif direction == "front":
 		move_msg.linear.x = 0.4
 		move_msg.angular.z = 0
-	elif motion_dict == "back":
+	elif direction == "back":
 		move_msg.linear.x = -0.4
 		move_msg.angular.z = 0
-	elif motion_dict == "front-right":
+	elif direction == "front-right":
 		move_msg.linear.x = 0.4
 		move_msg.angular.z = -0.3
-	elif motion_dict == "front-left":
+	elif direction == "front-left":
 		move_msg.linear.x = 0.4
 		move_msg.angular.z = 0.3
-	elif motion_dict == "back-right":
+	elif direction == "back-right":
 		move_msg.linear.x = -0.4
 		move_msg.angular.z = -0.3
-	elif motion_dict == "back-left":
+	elif direction == "back-left":
 		move_msg.linear.x = -0.4
 		move_msg.angular.z = 0.3
 	else:
@@ -206,25 +206,31 @@ def track_movement(frame):
 				direction = "nowhere"
 	cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 3)
 	# print("D--->\n",direction)
-	rospy.loginfo("D--->\n",direction)
+	rospy.loginfo("D ---> {0}\n".format(direction))
 	return direction
 
 
 # Define a callback for the Image message
 def image_callback(img_msg, bridge, motion_pub):
-	global COUNTER
+	global COUNTER, SAVEIMG
 	# log some info about the image topic
 	rospy.loginfo(img_msg.header)
 
 	# Try to convert the ROS Image message to a CV2 Image
 	try:
-		cv_image = bridge.imgmsg_to_cv2(img_msg, "passthrough")
+		frame = bridge.imgmsg_to_cv2(img_msg, "passthrough")
 	except CvBridgeError, e:
 		rospy.logerr("CvBridge Error: {0}".format(e))
 
 	# Flip the image 90deg
 	# cv_image = cv2.transpose(cv_image)
 	# cv_image = cv2.flip(cv_image,1)
+	if SAVEIMG:
+		print(type(frame))
+		print(frame.shape)
+		time.sleep(1)
+		cv2.imwrite("/home/svishwa2/catkin_ws/src/VishwakarmaS/others/aster_input.jpg",frame)
+		SAVEIMG = False
 	dilated_mask = process_rgb_frame(frame)
 	# flag, circled_orig = draw_hough_circle(dilated_mask)
 	frame = compute_the_contour(dilated_mask, frame)
@@ -254,8 +260,8 @@ def run_ros():
 
 
 def main():
-	opencv_test()
-	# run_ros()
+	# opencv_test()
+	run_ros()
 	return 0
 
 
