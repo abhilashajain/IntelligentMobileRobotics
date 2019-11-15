@@ -105,18 +105,24 @@ def compute_the_contour(dilated_mask, frame):
 	return frame
 
 
-def red_circle_image():
+def opencv_test():
 	# read image into rgb frame
-	frame = cv2.imread('./res/red_circle.jpg')
+	frame = cv2.imread('./others/red_boll.png')
 	dilated_mask = process_rgb_frame(frame)
 	flag, circled_orig = draw_hough_circle(dilated_mask)
-	frame = compute_the_contour(dilated_mask, frame)
-	cnts = cv2.findContours(red_mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-	cnts = imutils.grab_contours(cnts)
-	center = None
+	# frame = compute_the_contour(dilated_mask, frame)
+	# cnts = cv2.findContours(red_mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+	# cnts = imutils.grab_contours(cnts)
+	# center = None
+	while True:
+
+		if flag:
+			cv2.imshow("frames",circled_orig)
+
+		if cv2.waitKey(1)&0xFF == ord('q'):
+			break;
 
 	return 0
-
 
 def get_motion_command(direction):
 	move_msg = Twist()
@@ -245,8 +251,8 @@ def run_ros():
 
 
 def main():
-	# opencv_test()
-	run_ros()
+	opencv_test()
+	# run_ros()
 	return 0
 
 
