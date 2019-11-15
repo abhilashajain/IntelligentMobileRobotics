@@ -107,17 +107,19 @@ def compute_the_contour(dilated_mask, frame):
 
 def opencv_test():
 	# read image into rgb frame
-	frame = cv2.imread('./others/red_boll.png')
+	frame = cv2.imread('../others/red_ball.png')
+	frame = cv2.resize(frame,(640,480))
 	dilated_mask = process_rgb_frame(frame)
-	flag, circled_orig = draw_hough_circle(dilated_mask)
-	# frame = compute_the_contour(dilated_mask, frame)
+	print("H1")
+	# flag, circled_orig = draw_hough_circle(dilated_mask)
+	print("H2")
+	frame = compute_the_contour(dilated_mask, frame)
 	# cnts = cv2.findContours(red_mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 	# cnts = imutils.grab_contours(cnts)
 	# center = None
 	while True:
 
-		if flag:
-			cv2.imshow("frames",circled_orig)
+		cv2.imshow("frames",frame)
 
 		if cv2.waitKey(1)&0xFF == ord('q'):
 			break;
@@ -203,7 +205,8 @@ def track_movement(frame):
 			else:
 				direction = "nowhere"
 	cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 3)
-	print("D--->\n",direction)
+	# print("D--->\n",direction)
+	rospy.loginfo("D--->\n",direction)
 	return direction
 
 

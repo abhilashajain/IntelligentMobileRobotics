@@ -22,6 +22,8 @@ Installations ::
 
 Also ROS PKG Install :: cv_bridge, vision_opencv, image_transport
 
+watch -n1 rostopic echo /my_topic/field_name
+
 
 Links ::
 
