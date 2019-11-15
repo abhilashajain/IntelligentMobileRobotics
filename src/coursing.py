@@ -16,7 +16,6 @@ import imutils
 from cv_bridge import CvBridge, CvBridgeError
 
 
-
 RED_LOWER_BOUNDS_0 = (0, 100, 100)
 RED_UPPER_BOUNDS_0 = (10, 255, 255)
 RED_LOWER_BOUNDS_1 = (160, 100, 100)
@@ -46,12 +45,13 @@ def draw_hough_circle(dilated_mask):
 			circled_orig = cv2.circle(frame, (circle[0], circle[1]), circle[2], (0,255,0),thickness=3)
 		return True, circled_orig
 	else:
-		return False, dilated_mask
+		return False, dilprocess_rgb_frameated_mask
 
 
 def process_rgb_frame(frame, colour):
 	# blusing the image to reduce noise
 	blurred_frame = cv2.GaussianBlur(frame, (9, 9),3,3)
+	blurred_frame = cv2.GaussianBlur(blurred_frame, (9, 9),3,3)
 	# converting the input stream into HSV color space
 	blurred_hsv_frame = cv2.cvtColor(blurred_frame, cv2.COLOR_BGR2HSV)
 	# blurred_hsv_frame = cv2.GaussianBlur(hsv_frame,(9,9),3,3)
@@ -90,7 +90,7 @@ def compute_the_contour(dilated_mask, frame):
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
 		# only proceed if the radius meets a minimum size
-		if radius > 10:
+		if radius > 5:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
 			cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
@@ -134,39 +134,34 @@ def opencv_test():
 def get_motion_command(direction):
 	move_msg = Twist()
 
-	direction.replace("north","front")
-	direction.replace("east","right")
-	direction.replace("west","left")
-	direction.replace("south","back")
-
 	if direction == "left":
-		move_msg.linear.x = 0
-		move_msg.angular.z = 0.3
+		move_msg.linear.x = 0.1
+		move_msg.angular.z = 0.15
 	elif direction == "right":
-		move_msg.linear.x = 0
-		move_msg.angular.z = -0.3
-	elif direction == "front":
-		move_msg.linear.x = 0.4
+		move_msg.linear.x = 0.1
+		move_msg.angular.z = -0.15
+	elif direction == "forward":
+		move_msg.linear.x = 0.2
 		move_msg.angular.z = 0
 	elif direction == "back":
-		move_msg.linear.x = -0.4
+		move_msg.linear.x = -0.2
 		move_msg.angular.z = 0
-	elif direction == "front-right":
-		move_msg.linear.x = 0.4
-		move_msg.angular.z = -0.3
-	elif direction == "front-left":
-		move_msg.linear.x = 0.4
-		move_msg.angular.z = 0.3
+	elif direction == "forward-right":
+		move_msg.linear.x = 0.2
+		move_msg.angular.z = -0.15
+	elif direction == "forward-left":
+		move_msg.linear.x = 0.2
+		move_msg.angular.z = 0.15
 	elif direction == "back-right":
-		move_msg.linear.x = -0.4
-		move_msg.angular.z = -0.3
+		move_msg.linear.x = -0.2
+		move_msg.angular.z = -0.15
 	elif direction == "back-left":
-		move_msg.linear.x = -0.4
-		move_msg.angular.z = 0.3
+		move_msg.linear.x = -0.2
+		move_msg.angular.z = 0.15
 	else:
-		move_msg.linear.x = 0
+		move_msg.linear.x = 0.1
 		move_msg.angular.z = 0
-		print("Not Moving\n")
+		# print("Not Moving\n")
 		return move_msg, False
 
 	return move_msg, True
@@ -174,30 +169,29 @@ def get_motion_command(direction):
 
 def track_movement(frame):
 	direction = ""
+	# print(POINTS)
 	# loop over the set of tracked points
 	for i in np.arange(1, len(POINTS)):
 		# if either of the tracked points are None, ignore
-		# them
 		if POINTS[i - 1] is None or POINTS[i] is None:
 			continue
-		# check to see if enough points have been accumulated in
-		# the buffer
-		if COUNTER >= 10 and i == 1 and POINTS[-10] is not None:
+		# check to see if enough points have been accumulated in the buffer
+		if COUNTER >= 20 and i == 1 and POINTS[-10] is not None:
 			# compute the difference between the x and y
 			# coordinates and re-initialize the direction
 			# text variables
+			# time.sleep(1)
 			dX = POINTS[-10][0] - POINTS[i][0]
 			dY = POINTS[-10][1] - POINTS[i][1]
 			dirX, dirY = "", ""
 			# ensure there is significant movement in the
 			# x-direction
 			if np.abs(dX) > 20:
-				dirX = "east" if np.sign(dX) == 1 else "west"
-
+				dirX = "right" if np.sign(dX) == 1 else "left"
 			# ensure there is significant movement in the
 			# y-direction
 			if np.abs(dY) > 20:
-				dirY = "north" if np.sign(dY) == 1 else "south"
+				dirY = "forward" if np.sign(dY) == 1 else "back"
 
 			# handle when both directions are non-empty
 			if dirX != "" and dirY != "":
@@ -209,9 +203,14 @@ def track_movement(frame):
 				direction = dirX
 			else:
 				direction = "nowhere"
-	cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 3)
-	# print("D--->\n",direction)
-	rospy.loginfo("D ---> {0}\n".format(direction))
+	# cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 3)
+	print("\n\n\n")
+	print("D ---> {0}\n".format(direction))
+	print("\n\n\n")
+	# rospy.loginfo("\n\n\n")
+	# rospy.loginfo("D ---> {0}\n".format(direction))
+	# rospy.loginfo("\n\n\n")
+	# time.sleep(0.1)
 	return direction
 
 
@@ -219,8 +218,8 @@ def track_movement(frame):
 def image_callback(img_msg, bridge, motion_pub):
 	global COUNTER, SAVEIMG
 	# log some info about the image topic
-	rospy.loginfo(img_msg.header)
-
+	# rospy.loginfo(img_msg.header)
+	COUNTER = COUNTER + 1
 	# Try to convert the ROS Image message to a CV2 Image
 	try:
 		frame = bridge.imgmsg_to_cv2(img_msg, "passthrough")
@@ -235,14 +234,19 @@ def image_callback(img_msg, bridge, motion_pub):
 	frame = compute_the_contour(dilated_mask, frame)
 	direction = track_movement(frame)
 	move_msg, move_flag = get_motion_command(direction)
-
 	if move_flag:
+		# print("MOVE",move_msg)
+		# print("COUNTER",COUNTER)
 		COUNTER = 0
 		motion_pub.publish(move_msg)
 	else:
-		print("Nothing to Publish")
-	time.sleep(0.5)
-
+		pass
+		# print("Nothing to Publish")
+	if COUNTER >= 1000:
+		COUNTER = 0
+	cv2.imshow('img', frame)
+	if cv2.waitKey(1) & 0xFF == ord("q"):
+		exit(0)
 	return 0
 
 
@@ -255,7 +259,7 @@ def run_ros():
 	# cv2.namedWindow("Image Window", 1)
 	while not rospy.is_shutdown():
 	  rospy.spin()
-	  time.sleep(1)
+	  # time.sleep(1)
 	return 0
 
 
