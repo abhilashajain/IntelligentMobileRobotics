@@ -40,6 +40,23 @@ Running coursing.py
 launch bringup, astra
 
 
+Coding ::
+opencv split rgb to b,g,r
+opencv split hsv to v,s,h
+
+so in hsv version of rgb red_circle.jpeg threshold are
+
+for v > 60
+for s > 60
+for h > 60
+
+we are able to drow circle to red in video stream
+
+try if ther is time to do same with ir senson
+
+
+
+
 Image Not being displayed ::
 
 rosrun VishwakarmaS coursing.py
