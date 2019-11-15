@@ -21,6 +21,10 @@ RED_LOWER_BOUNDS_0 = (0, 100, 100)
 RED_UPPER_BOUNDS_0 = (10, 255, 255)
 RED_LOWER_BOUNDS_1 = (160, 100, 100)
 RED_UPPER_BOUNDS_1 = (180, 255, 255)
+
+LOWER_BLUE = (110,50,50)
+UPPER_BLUE = (130,255,255)
+
 POINTS = deque(maxlen=32)
 COUNTER = 0
 SAVEIMG = True
@@ -45,21 +49,22 @@ def draw_hough_circle(dilated_mask):
 		return False, dilated_mask
 
 
-def process_rgb_frame(frame):
+def process_rgb_frame(frame, colour):
 	# blusing the image to reduce noise
 	blurred_frame = cv2.GaussianBlur(frame, (9, 9),3,3)
 	# converting the input stream into HSV color space
 	blurred_hsv_frame = cv2.cvtColor(blurred_frame, cv2.COLOR_BGR2HSV)
 	# blurred_hsv_frame = cv2.GaussianBlur(hsv_frame,(9,9),3,3)
-	red_mask_0 = cv2.inRange(blurred_hsv_frame, RED_LOWER_BOUNDS_0, RED_UPPER_BOUNDS_0)
-	red_mask_1 = cv2.inRange(blurred_hsv_frame, RED_LOWER_BOUNDS_1, RED_UPPER_BOUNDS_1)
-	# after masking the red shades out, I add the two images
-	weighted_mask = cv2.addWeighted(red_mask_0, 1.0, red_mask_1, 1.0, 0.0)
-
-	# some morphological operations (closing) to remove small blobs
+	if colour == "red":
+		red_mask_0 = cv2.inRange(blurred_hsv_frame, RED_LOWER_BOUNDS_0, RED_UPPER_BOUNDS_0)
+		red_mask_1 = cv2.inRange(blurred_hsv_frame, RED_LOWER_BOUNDS_1, RED_UPPER_BOUNDS_1)
+		# after masking the red shades out, I add the two images
+		weighted_mask = cv2.addWeighted(red_mask_0, 1.0, red_mask_1, 1.0, 0.0)
+		# some morphological operations (closing) to remove small blobs
+	if colour == "blue":
+		weighted_mask = cv2.inRange(blurred_hsv_frame, LOWER_BLUE, UPPER_BLUE)
 	erode_element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 	dilate_element = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 8))
-
 	eroded_mask = cv2.erode(weighted_mask,erode_element)
 	dilated_mask = cv2.dilate(eroded_mask,dilate_element)
 
@@ -107,9 +112,9 @@ def compute_the_contour(dilated_mask, frame):
 
 def opencv_test():
 	# read image into rgb frame
-	frame = cv2.imread('../others/red_ball.png')
+	frame = cv2.imread('../others/aster_red.jpg')
 	frame = cv2.resize(frame,(640,480))
-	dilated_mask = process_rgb_frame(frame)
+	dilated_mask = process_rgb_frame(frame, "blue")
 	print("H1")
 	# flag, circled_orig = draw_hough_circle(dilated_mask)
 	print("H2")
@@ -225,13 +230,7 @@ def image_callback(img_msg, bridge, motion_pub):
 	# Flip the image 90deg
 	# cv_image = cv2.transpose(cv_image)
 	# cv_image = cv2.flip(cv_image,1)
-	if SAVEIMG:
-		print(type(frame))
-		print(frame.shape)
-		time.sleep(1)
-		cv2.imwrite("/home/svishwa2/catkin_ws/src/VishwakarmaS/others/aster_input.jpg",frame)
-		SAVEIMG = False
-	dilated_mask = process_rgb_frame(frame)
+	dilated_mask = process_rgb_frame(frame, "blue")
 	# flag, circled_orig = draw_hough_circle(dilated_mask)
 	frame = compute_the_contour(dilated_mask, frame)
 	direction = track_movement(frame)
@@ -242,6 +241,7 @@ def image_callback(img_msg, bridge, motion_pub):
 		motion_pub.publish(move_msg)
 	else:
 		print("Nothing to Publish")
+	time.sleep(0.5)
 
 	return 0
 
