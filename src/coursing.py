@@ -15,7 +15,6 @@ import time
 import imutils
 from cv_bridge import CvBridge, CvBridgeError
 
-
 RED_LOWER_BOUNDS_0 = (0, 100, 100)
 RED_UPPER_BOUNDS_0 = (10, 255, 255)
 RED_LOWER_BOUNDS_1 = (160, 100, 100)
@@ -26,18 +25,11 @@ UPPER_BLUE = (130,255,255)
 
 POINTS = deque(maxlen=32)
 COUNTER = 0
-SAVEIMG = True
-CIRCLE_RADIUS = 2
 
-# Define a function to show the image in an OpenCV Window
-def show_image(img):
-  cv2.imshow("Image Window", img)
-  cv2.waitKey(3)
 
 
 def draw_hough_circle(dilated_mask):
-	# red_mask = cv2.erode(red_mask, None, iterations=2)
-	# red_mask = cv2.dilate(red_mask, None, iterations=2)
+
 	detected_circles = cv2.HoughCircles(dilated_mask, cv2.HOUGH_GRADIENT, 1, 150, param1=100, param2=20, minRadius=10, maxRadius=20)
 
 	if detected_circles is not None:
@@ -73,7 +65,6 @@ def process_rgb_frame(frame, colour):
 
 def compute_the_contour(dilated_mask, frame):
 	global POINTS
-	# find contours in the mask and initialize the current
 	# (x, y) center of the ball
 	cnts = cv2.findContours(dilated_mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 	cnts = imutils.grab_contours(cnts)
@@ -81,9 +72,7 @@ def compute_the_contour(dilated_mask, frame):
 
 	# only proceed if at least one contour was found
 	if len(cnts) > 0:
-		# find the largest contour in the mask, then use
-		# it to compute the minimum enclosing circle and
-		# centroid
+		# find the largest contour in the mask, then use it to compute the minimum enclosing circle and centroid
 		c = max(cnts, key=cv2.contourArea)
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
@@ -91,8 +80,7 @@ def compute_the_contour(dilated_mask, frame):
 
 		# only proceed if the radius meets a minimum size
 		if radius > 5:
-			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
+			# draw the circle and centroid on the frame,then update the list of tracked points
 			cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
 			cv2.circle(frame, center, 5, (0, 0, 255), -1)
 	# update the points queue
@@ -100,11 +88,9 @@ def compute_the_contour(dilated_mask, frame):
 	# loop over the set of tracked points
 	for i in range(1, len(POINTS)):
 		# if either of the tracked points are None, ignore
-		# them
 		if POINTS[i - 1] is None or POINTS[i] is None:
 			continue
-		# otherwise, compute the thickness of the line and
-		# draw the connecting lines
+		# otherwise, compute the thickness of the line and draw the connecting lines
 		cv2.line(frame, POINTS[i - 1], POINTS[i], (0, 0, 255), 3)
 
 	return frame
@@ -115,20 +101,12 @@ def opencv_test():
 	frame = cv2.imread('../others/aster_red.jpg')
 	frame = cv2.resize(frame,(640,480))
 	dilated_mask = process_rgb_frame(frame, "blue")
-	print("H1")
 	# flag, circled_orig = draw_hough_circle(dilated_mask)
-	print("H2")
 	frame = compute_the_contour(dilated_mask, frame)
-	# cnts = cv2.findContours(red_mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-	# cnts = imutils.grab_contours(cnts)
-	# center = None
 	while True:
-
 		cv2.imshow("frames",frame)
-
 		if cv2.waitKey(1)&0xFF == ord('q'):
 			break;
-
 	return 0
 
 def get_motion_command(direction):
@@ -177,22 +155,16 @@ def track_movement(frame):
 			continue
 		# check to see if enough points have been accumulated in the buffer
 		if COUNTER >= 20 and i == 1 and POINTS[-10] is not None:
-			# compute the difference between the x and y
-			# coordinates and re-initialize the direction
-			# text variables
-			# time.sleep(1)
+			# compute the difference between the x and y coordinates and re-initialize the direction
 			dX = POINTS[-10][0] - POINTS[i][0]
 			dY = POINTS[-10][1] - POINTS[i][1]
 			dirX, dirY = "", ""
-			# ensure there is significant movement in the
-			# x-direction
+			# ensure there is significant movement in the x-direction
 			if np.abs(dX) > 20:
 				dirX = "right" if np.sign(dX) == 1 else "left"
-			# ensure there is significant movement in the
-			# y-direction
+			# ensure there is significant movement in the y-direction
 			if np.abs(dY) > 20:
 				dirY = "forward" if np.sign(dY) == 1 else "back"
-
 			# handle when both directions are non-empty
 			if dirX != "" and dirY != "":
 				direction = "{}-{}".format(dirY, dirX)
@@ -204,20 +176,12 @@ def track_movement(frame):
 			else:
 				direction = "nowhere"
 	# cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 3)
-	print("\n\n\n")
-	print("D ---> {0}\n".format(direction))
-	print("\n\n\n")
-	# rospy.loginfo("\n\n\n")
-	# rospy.loginfo("D ---> {0}\n".format(direction))
-	# rospy.loginfo("\n\n\n")
-	# time.sleep(0.1)
 	return direction
 
 
 # Define a callback for the Image message
 def image_callback(img_msg, bridge, motion_pub):
-	global COUNTER, SAVEIMG
-	# log some info about the image topic
+	global COUNTER
 	# rospy.loginfo(img_msg.header)
 	COUNTER = COUNTER + 1
 	# Try to convert the ROS Image message to a CV2 Image
@@ -226,22 +190,16 @@ def image_callback(img_msg, bridge, motion_pub):
 	except CvBridgeError, e:
 		rospy.logerr("CvBridge Error: {0}".format(e))
 
-	# Flip the image 90deg
-	# cv_image = cv2.transpose(cv_image)
-	# cv_image = cv2.flip(cv_image,1)
 	dilated_mask = process_rgb_frame(frame, "blue")
 	# flag, circled_orig = draw_hough_circle(dilated_mask)
 	frame = compute_the_contour(dilated_mask, frame)
 	direction = track_movement(frame)
 	move_msg, move_flag = get_motion_command(direction)
 	if move_flag:
-		# print("MOVE",move_msg)
-		# print("COUNTER",COUNTER)
 		COUNTER = 0
 		motion_pub.publish(move_msg)
 	else:
 		pass
-		# print("Nothing to Publish")
 	if COUNTER >= 1000:
 		COUNTER = 0
 	cv2.imshow('img', frame)
@@ -256,7 +214,6 @@ def run_ros():
 	bridge = CvBridge() # Initialize the CvBridge class
 	callback_lambda = lambda x: image_callback(x, bridge, motion_pub)
 	sub_image = rospy.Subscriber("/camera/rgb/image_raw", Image, callback_lambda, queue_size=1)
-	# cv2.namedWindow("Image Window", 1)
 	while not rospy.is_shutdown():
 	  rospy.spin()
 	  # time.sleep(1)
