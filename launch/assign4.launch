@@ -1,9 +1,0 @@
-<launch>
-  <include file="$(find turtlebot_bringup)/launch/minimal.launch" output="screen"></include>
-  <include file="$(find astra_launch)/launch/astra.launch" output="screen"></include>
-  <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
-  <node name="image_view" pkg="image_view" type="image_view">
-    <remap from="image" to="/camera/rgb/image_raw"/>
-  </node>
-  <node name="coursing" pkg="VishwakarmaS" type="coursing.py" output="screen"/>
-</launch>

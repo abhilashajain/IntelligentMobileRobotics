@@ -1,4 +1,4 @@
-# Assignment 3
+# Assignment 4
 
 
 Submitted by:
@@ -6,34 +6,22 @@ Submitted by:
   Abhilasha Jain - ajain35@binghamton.edu (BU - B00817064)
 
 
-Part 1:
+TurtleBot Follows a Ball Based on Visual Input (RGB-D)
 
-Navigation In the Lab LNG210
+Run Command : roslaunch VishwakarmaS assign6.launch
 
-  roslaunch VishwakarmaS assign3_bringup.launch
-  roslaunch VishwakarmaS assign3_navigation.launch  # touchdown.py
-
-  Youtube:
-    TurtleBot Navigating Through Goal Locations - https://www.youtube.com/watch?v=swwSebC-2J0
-    TurtleBot Navigating Through Door (Going through the door only if its open) - https://www.youtube.com/watch?v=JJ5ceWMy5I8
+Youtube : TurtleBot Ball Follower - https://youtu.be/FKLasmc6CHo
 
 
-Part 2:
+Reference :
 
-Voice Navigation outside Lab LNG210
+Ball tracking with OpenCV
+https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
 
-  roslaunch VishwakarmaS assign3_bringup.launch
-  roslaunch VishwakarmaS assign3_voice.launch  # obeyer.py
+Red Ball Image "/others/aster_red.jpg" when ROS topic "/camera/rgb/image_raw" data is saved to jpg file
 
-  Youtube:
-    TurtleBot Voice Navigation - https://www.youtube.com/watch?v=BUEU2VML0ss
-
-  Note:
-      We tried using the "google api" to recognize the voice commands.
-      It was very slow and api response where taking a lot of time thus resulting in jerking motion of turtlebot.
-
-      We also tried "pocketsphinx", using the https://github.com/shiqizhang6/ros_voice_control package,
-      Here the recognition was quick but process was prone to surrounding noices and not recognizing different pronunciations.
-
-      We also implemented a dialog system where it ask 'Yes' or 'No' before performing in commanded motion action.
-      To see the dialog system code, Please checkout commit e49c90affe2744f27925e98ea5bc096cca37d6d3
+Note:
+    We used the open source tutorial to track a ball using camera frames.
+    We then implemented the same using aster data from topic.
+    The Red Ball appears blue when we tried to save the numpy data from the ros topic to a jpg image file.
+    we made modification in our code to track the ball motion and added motion commands based on ball motion.
