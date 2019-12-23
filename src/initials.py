@@ -70,7 +70,7 @@ def main():
 	with open('log_file.log', 'w') as opened_file:
 		opened_file.write("THIS IS VishwakarmaS Package Ros Log: Assign 1\n\n")
 		opened_file.write("Working Dir : {0}\n".format(os.getcwd()))
-	rospy.init_node('sagar_turtlesim')
+	rospy.init_node('sagar_initial')
 	pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=1)
 	# pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=1) # to move actual turtlebot use this node to publish move msg
 	sub = rospy.Subscriber('/turtle1/pose', Pose, log_pos)

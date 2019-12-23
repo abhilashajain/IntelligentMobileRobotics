@@ -4,5 +4,5 @@
   </include>
   <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"></include>
   <include file="$(find turtlebot_gazebo)/launch/gmapping_demo.launch"></include>
-  <node pkg="VishwakarmaS" type="VishwakarmaS.py" name="wonderlust"/>
+  <node pkg="VishwakarmaS" type="wonderlust.py" name="wonderlust"/>
 </launch>
