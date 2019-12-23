@@ -1,6 +1,4 @@
-# CS580R
-
-Intelligent Mobile Robotics
+# Intelligent Mobile Robotics
 
 An Introduction to Robotics and ROS (Robot Operating System). This repository includes python modules to work with Turtlebot in ROS.
 
